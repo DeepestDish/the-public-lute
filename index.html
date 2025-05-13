@@ -9,9 +9,25 @@ let string_spacing = nn.height / 32
 let string_color = "#FFFFFF"
 let fret_color = "#CB9386"
 let nut_color = "#FF2629"
-
 let no_frets = 6
-  
+
+//let hp_offset = 0.2
+
+//DEFINING AUDIO FILES
+//COURSE 1
+let c1_fret = 0
+let c1_0 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
+let c1_1 = nn.create('audio').set({src: "samples/course_1/F#4.mp3",})
+let c1_2 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
+let c1_3 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
+let c1_4 = nn.create('audio').set({src: "samples/course_1/A4.mp3",})
+let c1_5 = nn.create('audio').set({src: "samples/course_1/A#4.mp3",})
+let c1_6 = nn.create('audio').set({src: "samples/course_1/B4.mp3",})
+
+function keydown(event){
+  console.log(event.code)
+}
+
 function course(strings, height){
   new paper.Path.Rectangle({
     point: [0, height],
@@ -65,12 +81,13 @@ function setup() {
     })  
   }
   // Draw courses
-  course(2, (nn.height / 4) * 0.5)
+  course(1, (nn.height / 4) * 0.5)
   course(2, (nn.height / 4) * 1.5)
   course(2, (nn.height / 4) * 2.5)
-  course(1, (nn.height / 4) * 3.5)
+  course(2, (nn.height / 4) * 3.5)
 
 }
 
 nn.on('load', setup)
+nn.on('keydown', keydown)
 </script>
