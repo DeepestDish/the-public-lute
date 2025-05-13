@@ -16,18 +16,49 @@ let no_frets = 6
 //DEFINING AUDIO FILES
 //COURSE 1
 let c1_fret = 0
-let c1_0 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
-let c1_1 = nn.create('audio').set({src: "samples/course_1/F#4.mp3",})
-let c1_2 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
-let c1_3 = nn.create('audio').set({src: "samples/course_1/F4.mp3",})
-let c1_4 = nn.create('audio').set({src: "samples/course_1/A4.mp3",})
-let c1_5 = nn.create('audio').set({src: "samples/course_1/A#4.mp3",})
-let c1_6 = nn.create('audio').set({src: "samples/course_1/B4.mp3",})
+let c1_tune = 65 
+let c1_samples = []
+let c1_keys = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"]
 
-function keydown(event){
-  console.log(event.code)
+for (let i = c1_tune; i < c1_tune + no_frets + 1; i++){
+  let note = nn.midiToNote(i)
+  if (note.includes("#")){
+    note = nn.midiToNote(i + 1)
+    note = note.charAt(0) + "b" + note.charAt(1)
+  }
+  let path = "samples/course_1/" + note + ".mp3"
+  console.log(path)
+  c1_samples.push(nn.create('audio').set({src: path}))
 }
 
+console.log(c1_samples)
+//AUDIO
+function keydown(event){
+  //console.log(event.code)
+  
+  //PLUCK COURSE 1
+  if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
+    //console.log("attempting to play c1")
+    for (let i = 0; i < no_frets + 1; i++){
+      if (i === c1_fret){
+        c1_samples[i].currentTime = 0
+        c1_samples[i].play()
+        console.log(c1_samples[i].src)
+      }
+      else{
+        c1_samples[i].pause()
+      }
+    }
+  }
+  
+  //FRET COURSE 1
+  if (c1_keys.includes(event.code)){
+    c1_fret = c1_keys.indexOf(event.code) + 1
+    //console.log(c1_fret) 
+  }
+}
+
+//DRAW A COURSE
 function course(strings, height){
   new paper.Path.Rectangle({
     point: [0, height],
@@ -43,7 +74,8 @@ function course(strings, height){
     })
   }
 }
-
+  
+//DRAW THE LUTE ITSELF
 function setup() {
   // Create and append the canvas to the document body
   const canvas = nn.create('canvas')
