@@ -11,7 +11,12 @@ let fret_color = "#CB9386"
 let nut_color = "#FF2629"
 let no_frets = 6
 
-//let hp_offset = 0.2
+//"hp" means hammer/pull, which refers to
+//hammer-ons and pull-offs. 
+
+//I don't have samples for this, so I'm simulating it
+//with a 200 millisecond sample offset.
+let hp_offset = 0.2
 
 //DEFINING AUDIO FILES
 //COURSE 1
@@ -27,11 +32,44 @@ for (let i = c1_tune; i < c1_tune + no_frets + 1; i++){
     note = note.charAt(0) + "b" + note.charAt(1)
   }
   let path = "samples/course_1/" + note + ".mp3"
-  console.log(path)
+  //console.log(path)
   c1_samples.push(nn.create('audio').set({src: path}))
 }
 
-console.log(c1_samples)
+//console.log(c1_samples)
+  
+//LOOPING FUNCTIONS
+
+//Makes a course resonate, whether it's a
+//pluck or a hammer-on/pull-off.
+function string_sound(sample_set, sample_offset){
+    for (let i = 0; i < no_frets + 1; i++){
+      if (i === c1_fret){
+        sample_set[i].currentTime = sample_offset
+        sample_set[i].play()
+        //console.log(sample_set[i].src)
+      }
+      else{
+        sample_set[i].pause()
+      }
+    }  
+}
+
+function is_playing(sample_set){
+  let value = false
+  for (let i = 0; i < no_frets + 1; i++){
+    if (sample_set[i].paused){
+      continue
+    }
+    else{
+      value = true
+      return value
+      break
+    }
+  }
+  return value
+}
+  
 //AUDIO
 function keydown(event){
   //console.log(event.code)
@@ -39,25 +77,28 @@ function keydown(event){
   //PLUCK COURSE 1
   if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
     //console.log("attempting to play c1")
-    for (let i = 0; i < no_frets + 1; i++){
-      if (i === c1_fret){
-        c1_samples[i].currentTime = 0
-        c1_samples[i].play()
-        console.log(c1_samples[i].src)
-      }
-      else{
-        c1_samples[i].pause()
-      }
-    }
+    string_sound(c1_samples, 0)
   }
   
   //FRET COURSE 1
   if (c1_keys.includes(event.code)){
     c1_fret = c1_keys.indexOf(event.code) + 1
-    //console.log(c1_fret) 
+    if (is_playing(c1_samples)){
+      string_sound(c1_samples, hp_offset)
+    }
   }
 }
 
+async function keyup(event){
+  //UNFRET COURSE 1
+  if (c1_keys.includes(event.code)){
+    c1_fret = 0
+    if (is_playing(c1_samples)){
+      string_sound(c1_samples, hp_offset)
+    }
+  }
+}
+  
 //DRAW A COURSE
 function course(strings, height){
   new paper.Path.Rectangle({
@@ -122,4 +163,5 @@ function setup() {
 
 nn.on('load', setup)
 nn.on('keydown', keydown)
+nn.on('keyup', keyup)
 </script>
