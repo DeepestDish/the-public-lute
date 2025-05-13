@@ -1,0 +1,65 @@
+<script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+<script>
+/* global nn, paper */
+
+let string_thickness = nn.height / 64
+let course_spacing = nn.height / 4
+let string_spacing = nn.height / 32
+let string_color = "#ffffff"
+let fret_color = "F0C8F8"
+let nut_color = ""
+
+let no_frets = 6
+  
+function course(strings, height){
+  new paper.Path.Rectangle({
+    point: [0, height],
+    size: [nn.width, string_thickness],
+    fillColor: string_color
+  })
+  
+  if (strings === 2){
+    new paper.Path.Rectangle({
+      point: [0, height + string_spacing],
+      size: [nn.width, string_thickness],
+      fillColor: string_color
+    })
+  }
+}
+
+function setup() {
+  // Create and append the canvas to the document body
+  const canvas = nn.create('canvas')
+    .set({ width: nn.width, height: nn.height })
+    .position(0, 0)
+    .addTo('body')
+
+  // Setup Paper.js with the created canvas
+  paper.setup(canvas)
+
+  // Draw the fretboard color
+  new paper.Path.Rectangle({
+    point: [0, 0],
+    size: [nn.width, nn.height],
+    fillColor: '#B7491F'
+  })
+  // Draw the body color
+  new paper.Path.Rectangle({
+    point: [(nn.width / (no_frets + 1)) * no_frets, 0],
+    size: [nn.width, nn.height],
+    fillColor: '#FAD0AD'
+  })
+  // Draw frets
+  
+  // Draw courses
+  course(2, (nn.height / 4) * 0.5)
+  course(2, (nn.height / 4) * 1.5)
+  course(2, (nn.height / 4) * 2.5)
+  course(1, (nn.height / 4) * 3.5)
+
+
+}
+
+nn.on('load', setup)
+</script>
