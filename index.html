@@ -4,11 +4,11 @@
 /* global nn, paper */
 
 let string_thickness = nn.height / 64
-let course_spacing = nn.height / 4
+//let course_spacing = nn.height / 4
 let string_spacing = nn.height / 32
-let string_color = "#ffffff"
-let fret_color = "F0C8F8"
-let nut_color = ""
+let string_color = "#FFFFFF"
+let fret_color = "#CB9386"
+let nut_color = "#FF2629"
 
 let no_frets = 6
   
@@ -50,14 +50,25 @@ function setup() {
     size: [nn.width, nn.height],
     fillColor: '#FAD0AD'
   })
-  // Draw frets
+  // Draw nut, then frets
+  new paper.Path.Rectangle({
+    point: [string_thickness * 0.1, 0],
+    size: [string_thickness, nn.height],
+    fillColor: nut_color
+  })
   
+  for (let i = 1; i < no_frets + 1; i++) {
+    new paper.Path.Rectangle({
+      point: [(nn.width / (no_frets + 1)) * i, 0],
+      size: [string_thickness, nn.height],
+      fillColor: fret_color
+    })  
+  }
   // Draw courses
   course(2, (nn.height / 4) * 0.5)
   course(2, (nn.height / 4) * 1.5)
   course(2, (nn.height / 4) * 2.5)
   course(1, (nn.height / 4) * 3.5)
-
 
 }
 
