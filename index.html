@@ -9,7 +9,7 @@ let string_spacing = nn.height / 32
 let string_color = "#FFFFFF"
 let fret_color = "#CB9386"
 let nut_color = "#FF2629"
-let no_frets = 6
+let no_frets = 8
 
 //"hp" means hammer/pull, which refers to
 //hammer-ons and pull-offs. 
@@ -33,7 +33,7 @@ let c1_muted = false
 let c1_tune = 65
 let c1_samples = []
 //"c1_keys" is what keys can be pressed to fret course 1.
-let c1_keys = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"]
+let c1_keys = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8"]
 
 //COURSE 2
 //...stuff pending
@@ -41,8 +41,7 @@ let c1_keys = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"]
 for (let i = c1_tune; i < c1_tune + no_frets + 1; i++){
   let note = nn.midiToNote(i)
   if (note.includes("#")){
-    note = nn.midiToNote(i + 1)
-    note = note.charAt(0) + "b" + note.charAt(1)
+    note = note.charAt(0) + "s" + note.charAt(2)
   }
   let path = "samples/course_1/" + note + ".mp3"
   //console.log(path)
@@ -225,7 +224,7 @@ function setup() {
 
 function animate() {
   requestAnimationFrame(animate)
-  document.body.innerText = c1_fretted
+  //document.body.innerText = c1_fretted
 }
   
 nn.on('load', setup)
