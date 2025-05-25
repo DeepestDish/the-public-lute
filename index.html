@@ -15,15 +15,28 @@ let no_frets = 6
 //hammer-ons and pull-offs. 
 
 //I don't have samples for this, so I'm simulating it
-//with a 200 millisecond sample offset.
-let hp_offset = 0.15
+//with a sample offset specified in seconds.
+let hp_offset = 0.175
 
-//DEFINING AUDIO FILES
+//DEFINING AUDIO + LOGISTICAL VARIABLES
+
 //COURSE 1
-let c1_fret = 0
-let c1_tune = 65 
+//"c1_playkeys" is what keys can be pressed to pluck course 1.
+let c1_playkeys = ["NumpadAdd", "NumpadSubtract"]
+//"c1_listeners" prevents key events from being rapid-fired while
+//they're held down.
+let c1_listeners = [true, true]
+// "c1_fretted" refers to the frets that are being pressed on.
+// This dictates the pitch of the first course.
+let c1_fretted = []
+let c1_muted = false
+let c1_tune = 65
 let c1_samples = []
+//"c1_keys" is what keys can be pressed to fret course 1.
 let c1_keys = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"]
+
+//COURSE 2
+//...stuff pending
 
 for (let i = c1_tune; i < c1_tune + no_frets + 1; i++){
   let note = nn.midiToNote(i)
@@ -40,12 +53,31 @@ for (let i = c1_tune; i < c1_tune + no_frets + 1; i++){
   
 //LOOPING FUNCTIONS
 
+//Check what pitch a course should resonate at.
+//fret_max, the variable we're looking for,
+//refers to the highest-numbered fret that's being pressed.
+function check_frets(sample_set){
+  let fret_max = 0
+  for (let i = 0; i < c1_fretted.length; i++){
+    if (c1_fretted[i] > fret_max){
+      fret_max = c1_fretted[i]
+    }
+  }
+  return fret_max
+}
+  
+
 //Makes a course resonate, whether it's a
 //pluck or a hammer-on/pull-off.
 function string_sound(sample_set, sample_offset){
     for (let i = 0; i < no_frets + 1; i++){
-      if (i === c1_fret){
+      if (i === check_frets(sample_set)){
         sample_set[i].currentTime = sample_offset
+        //SLIGHT RANDOMIZATION
+        sample_set[i].preservesPitch = false
+        sample_set[i].volume = 0.9 + nn.randomFloat(0,0.1)
+        sample_set[i].playbackRate = 1 + nn.randomFloat(-0.005, 0.005)
+        //
         sample_set[i].play()
         //console.log(sample_set[i].src)
       }
@@ -55,6 +87,12 @@ function string_sound(sample_set, sample_offset){
     }  
 }
 
+//Mutes a course.  
+function mute(sample_set){
+  for (let i = 0; i < no_frets + 1; i++){
+    sample_set[i].pause()
+}}
+  
 function is_playing(sample_set){
   let value = false
   for (let i = 0; i < no_frets + 1; i++){
@@ -72,28 +110,51 @@ function is_playing(sample_set){
   
 //AUDIO
 function keydown(event){
-  //console.log(event.code)
+  console.log(event.code)
   
   //PLUCK COURSE 1
   if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
+    let index = c1_playkeys.indexOf(event.code)
+    if (c1_listeners[index] === true && !c1_muted){
     //console.log("attempting to play c1")
     string_sound(c1_samples, 0)
+    c1_listeners[index] = false
+    }
+  }
+  
+  //MUTE COURSE 1
+  if (event.code === "Backspace" && !c1_muted){
+    c1_muted = true
+    mute(c1_samples)
   }
   
   //FRET COURSE 1
-  if (c1_keys.includes(event.code)){
-    c1_fret = c1_keys.indexOf(event.code) + 1
-    if (is_playing(c1_samples)){
+  let before = check_frets(c1_samples)
+  let fret = c1_keys.indexOf(event.code) + 1
+  let already_in = c1_fretted.includes(fret)
+  if (c1_keys.includes(event.code) && !already_in){
+    c1_fretted.push(fret)
+    let after = check_frets(c1_samples)
+    if (is_playing(c1_samples) && before !== after){
       string_sound(c1_samples, hp_offset)
     }
   }
 }
 
 async function keyup(event){
+  //MAKE COURSE 1 PLUCKABLE AGAIN
+  if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
+    let index = c1_playkeys.indexOf(event.code)
+    c1_listeners[index] = true}
+  //UNMUTE COURSE 1
+  if (event.code === "Backspace"){
+    c1_muted = false
+  }
   //UNFRET COURSE 1
   if (c1_keys.includes(event.code)){
-    c1_fret = 0
-    if (is_playing(c1_samples)){
+    let fret = c1_keys.indexOf(event.code) + 1
+    c1_fretted.splice(c1_fretted.indexOf(fret), 1)
+    if (is_playing(c1_samples) && fret > check_frets(c1_samples)){
       string_sound(c1_samples, hp_offset)
     }
   }
@@ -158,9 +219,15 @@ function setup() {
   course(2, (nn.height / 4) * 1.5)
   course(2, (nn.height / 4) * 2.5)
   course(2, (nn.height / 4) * 3.5)
-
+  //
+  animate()
 }
 
+function animate() {
+  requestAnimationFrame(animate)
+  document.body.innerText = c1_fretted
+}
+  
 nn.on('load', setup)
 nn.on('keydown', keydown)
 nn.on('keyup', keyup)
