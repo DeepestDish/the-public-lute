@@ -45,19 +45,18 @@ class Course {
 
 
 //COURSE 1
-let c1 = new Course(["NumpadAdd", "NumpadSubtract"],
+let courses = [ new Course(["NumpadAdd", "NumpadSubtract"],
                    ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8"],
                    ["Backspace"],
                    65,
-                   "course_1")
+                   "course_1"),
 //COURSE 2
-let c2 = new Course(["Numpad7", "Numpad8"],
+                new Course(["Numpad7", "Numpad8"],
                    ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyU", "KeyI"],
                    ["Backslash"],
                    60,
-                   "course_2")
+                   "course_2")]
 
-let courses = [c1, c2]
 
 //A for loop to check if courses were properly formed.
 //Uncomment if you wanna run it.
@@ -84,7 +83,7 @@ for (let i = tuning; i < tuning + no_frets + 1; i++){
 
 return path_list
 
-}
+} 
   
 //GENERATE FILE PATHS!!!
 //COURSE 1
@@ -147,24 +146,24 @@ function is_playing(course){
   }
   return value
 }
-  
+
 //AUDIO FUNCTIONALITY
-function keydown(event){
-  //console.log(event.code)
-  
+async function keydown(event){
+  //console.log(typeof courses)
+  //console.log(courses.length)  
   //EVERY COURSE LISTENS TO KEYDOWN EVENTS!!!
   //To prevent ridiculous amounts of copy-pasting,
   //I'm using a for loop to run these same checks
   //on every course. Don't ask me if that's the ideal way.
   //I don't know.
   for (let i = 0; i < courses.length; i++){
-    
+  
   //Make a course resonate
   if (courses[i].play_keys.includes(event.code)){
     let index = courses[i].play_keys.indexOf(event.code)
     if (courses[i].play_listeners[index] === true && !courses[i].muted){
     //console.log("attempting to play c1")
-    string_sound(courses[i].sample_set, 0)
+    string_sound(courses[i], 0)
     courses[i].play_listeners[index] = false
     }
   }
@@ -273,9 +272,10 @@ function setup() {
   //animate()
 }
 
-function animate() {
+async function animate() {
+  await courses
   requestAnimationFrame(animate)
-  //document.body.innerText = c1_fretted
+  document.body.innerText = courses[0].play_listeners + "-----" + courses[1].play_listeners
 }
   
 nn.on('load', setup)
