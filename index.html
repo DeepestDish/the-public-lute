@@ -1,12 +1,16 @@
+
 <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
-<script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+
+<script>  
 document.addEventListener('touchmove', function (event) {
   if (event.scale !== 1) { event.preventDefault(); }
 }, { passive: false });
-/* global nn, paper */
-
+/* global nn, paper, WebFont */
+  
 //Dimensions
 let string_thickness = (nn.height * 1) / 100
 let string_spacing = nn.height / 64
@@ -180,7 +184,6 @@ function is_playing(course){
   }
   return value
 }
-
 //AUDIO FUNCTIONALITY
 async function keydown(event){
   //console.log(typeof courses)
@@ -271,7 +274,7 @@ function setup() {
     .set({ width: nn.width, height: nn.height * (4/5)})
     .position(0, nn.height * 1/5)
     .addTo('body')
-
+  
   // Setup Paper.js with the created canvas
   paper.setup(canvas)
   
@@ -328,12 +331,46 @@ function setup() {
   for (let i = 0; i < courses.length; i++){
     draw_course(courses[i].no_strings, 
                 ((courses[i].no_strings === 1) * string_spacing / 2) + first_course_y + course_spacing * i + lute_offset)}
-  // 
+  //
+    
   //animate()
+  nn.create('label')
+    .content("The Public Lute")
+    .css({
+    position: 'absolute',
+    left: nn.width * 0.02,
+    top: nn.height * 0.02,
+    color: 'red',
+    fontSize: nn.height * 0.04
+  })
+    .addTo("body")
+  
+  nn.create('input')
+    .set({
+        id: "size_slider",
+        type: 'range',
+        min: 50,
+        max: 100,
+        value: 100,
+        step: 1
+        })
+  .css({
+    position: 'absolute',
+    left: nn.width * 0.45,
+    top: nn.height * 0.02
+  })
+  .addTo("body")
+  
+  nn.create('label')
+    .content("Neck Width")
+    .css({
+    position: 'absolute',
+    left: nn.width * 0.47,
+    top: nn.height * 0.05
+  })
+    .addTo("body")
 }
 
-
-  
 async function animate() {
   await courses
   requestAnimationFrame(animate)
