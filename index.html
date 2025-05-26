@@ -7,19 +7,11 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
 <script>  
 
-/* global nn, paper, WebFont */
-
-  WebFont.load({
-    google: {
-      families: ['Tangerine', 'Droid Serif']
-    }
-  });
+/* global nn, paper */
 
 //Dimensions
 let string_thickness = (nn.height * 1) / 100
@@ -399,16 +391,31 @@ function setup() {
 
 function mouse_pressed() {
   mouse_down = true
+  for (let i = 0; i < courses.length; i++){
+    //If within a certain y-coordinate range...
+    if (course_touching(courses[i])){
+      mute(courses[i])
+      courses[i].mouse_listener = true
+    }
+  }
 }
 function mouse_released(){
   mouse_down = false
 }
+//check if the mouse cursor is touching a course
+function course_touching(course){
+  let value = false
+  if (nn.mouseY > course.y - hitbox_thickness && nn.mouseY < course.y + hitbox_thickness){
+    value = true 
+  }
+  return value
+}
 
 function mouse_move(e) {
   for (let i = 0; i < courses.length; i++){
-    cy = courses[i].y
+    //cy = courses[i].y
     //If within a certain y-coordinate range...
-    if (e.y > cy - hitbox_thickness && e.y < cy + hitbox_thickness){
+    if (course_touching(courses[i])){
       //Pluck it! Then deactivate the listener to prevent spamming.
       if (!mouse_down && courses[i].mouse_listener){
         string_sound(courses[i], 0)
@@ -433,4 +440,5 @@ nn.on('keyup', keyup)
 nn.on('mousemove', mouse_move)
 nn.on('mousedown', mouse_pressed)
 nn.on('mouseup', mouse_released)
+nn.on('wheel', mouse_wheel)
 </script>
