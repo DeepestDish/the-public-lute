@@ -1,3 +1,7 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One&family=MedievalSharp&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+
 
 <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
 
@@ -10,7 +14,13 @@ document.addEventListener('touchmove', function (event) {
   if (event.scale !== 1) { event.preventDefault(); }
 }, { passive: false });
 /* global nn, paper, WebFont */
-  
+
+  WebFont.load({
+    google: {
+      families: ['Tangerine', 'Droid Serif']
+    }
+  });
+
 //Dimensions
 let string_thickness = (nn.height * 1) / 100
 let string_spacing = nn.height / 64
@@ -19,7 +29,7 @@ let first_course_y = (nn.height / 8) * 2.9
 let fretboard_thickness = nn.height * (3/4)
 let lute_offset = -nn.height * (1.4/10)
 let no_frets = 8
-let lute_scale = 1
+let lute_scale = 0.5
 //Colors
 let bg_color = "#DDCDBA"
 let string_color = "#F4F1E5"
@@ -340,7 +350,9 @@ function setup() {
     position: 'absolute',
     left: nn.width * 0.02,
     top: nn.height * 0.02,
-    color: 'red',
+    color: '#CE202C',
+    fontFamily: 'UnifrakturMaguntia',
+    fontWeight: 'bold',
     fontSize: nn.height * 0.04
   })
     .addTo("body")
@@ -365,7 +377,8 @@ function setup() {
     .content("Neck Width")
     .css({
     position: 'absolute',
-    left: nn.width * 0.47,
+    fontFamily: 'MedievalSharp',
+    left: nn.width * 0.48,
     top: nn.height * 0.05
   })
     .addTo("body")
