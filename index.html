@@ -55,7 +55,19 @@ let courses = [ new Course(["NumpadAdd", "NumpadSubtract"],
                    ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyU", "KeyI"],
                    ["Backslash"],
                    60,
-                   "course_2")]
+                   "course_2"),
+//COURSE 3
+                new Course(["Numpad4", "Numpad5"],
+                   ["KeyA", "KeyS", "KeyD", "KeyF", "KeyG", "KeyH", "KeyJ", "KeyK"],
+                   ["Enter"],
+                   55,
+                   "course_3"),
+//COURSE 4
+                new Course(["Numpad1", "Numpad2"],
+                   ["KeyZ", "KeyX", "KeyC", "KeyV", "KeyB", "KeyN", "KeyM", "Comma"],
+                   ["ShiftRight"],
+                   50,
+                   "course_4")]
 
 
 //A for loop to check if courses were properly formed.
@@ -156,6 +168,9 @@ async function keydown(event){
   //I'm using a for loop to run these same checks
   //on every course. Don't ask me if that's the ideal way.
   //I don't know.
+  
+  console.log(event.code) 
+  
   for (let i = 0; i < courses.length; i++){
   
   //Make a course resonate
@@ -275,7 +290,7 @@ function setup() {
 async function animate() {
   await courses
   requestAnimationFrame(animate)
-  document.body.innerText = courses[0].play_listeners + "-----" + courses[1].play_listeners
+  document.body.innerText = courses[0].fretted + courses[1].fretted + courses[2].fretted + courses[3].fretted
 }
   
 nn.on('load', setup)
