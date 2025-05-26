@@ -3,12 +3,22 @@
 <script>
 /* global nn, paper */
 
-let string_thickness = nn.height / 64
-let string_spacing = nn.height / 32
-let string_color = "#FFFFFF"
-let fret_color = "#CB9386"
-let nut_color = "#FF2629"
+//Dimensions
+let string_thickness = nn.height / 100
+let string_spacing = nn.height / 64
+let course_spacing = nn.height / 6
+let first_course_y = (nn.height / 8) * 1.9
+let fretboard_thickness = nn.height * (3/4)
+let fretboard_offset = -nn.height * (1/8)
 let no_frets = 8
+//Colors
+let bg_color = "#DDCDBA"
+let string_color = "#F4F1E5"
+let fret_color = "#C39491"
+let nut_color = "#D7B5B3"
+let body_color = "#EAC19B"
+let fretboard_color = "#5F4139"
+
 
 //"hp" means hammer/pull, which refers to
 //hammer-ons and pull-offs. 
@@ -19,7 +29,7 @@ let hp_offset = 0.175
 
 //DEFINING AUDIO + LOGISTICAL VARIABLES
 class Course {
-  constructor(play_keys, fret_keys, mute_key, tuning, subfolder){
+  constructor(play_keys, fret_keys, mute_key, tuning, subfolder, no_strings){
     //play_keys is what keys can be pressed to pluck the course.
     this.play_keys = play_keys;
     //play_listeners prevents key events from being rapid-fired
@@ -40,6 +50,8 @@ class Course {
     this.subfolder = subfolder;
     //A list of samples used by the course.
     this.sample_set = generate_paths(this.tuning, this.subfolder);
+    //How many strings?
+    this.no_strings = no_strings;
   }
 }
 
@@ -49,25 +61,25 @@ let courses = [ new Course(["NumpadAdd", "NumpadSubtract"],
                    ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8"],
                    ["Backspace"],
                    65,
-                   "course_1"),
+                   "course_1", 1),
 //COURSE 2
                 new Course(["Numpad7", "Numpad8"],
                    ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyU", "KeyI"],
                    ["Backslash"],
                    60,
-                   "course_2"),
+                   "course_2", 2),
 //COURSE 3
                 new Course(["Numpad4", "Numpad5"],
                    ["KeyA", "KeyS", "KeyD", "KeyF", "KeyG", "KeyH", "KeyJ", "KeyK"],
                    ["Enter"],
                    55,
-                   "course_3"),
+                   "course_3", 2),
 //COURSE 4
                 new Course(["Numpad1", "Numpad2"],
                    ["KeyZ", "KeyX", "KeyC", "KeyV", "KeyB", "KeyN", "KeyM", "Comma"],
                    ["ShiftRight"],
                    50,
-                   "course_4")]
+                   "course_4", 2)]
 
 
 //A for loop to check if courses were properly formed.
@@ -225,7 +237,7 @@ async function keyup(event){
 }}
   
 //DRAW A COURSE
-function course(strings, height){
+function draw_course(strings, height){
   new paper.Path.Rectangle({
     point: [0, height],
     size: [nn.width, string_thickness],
@@ -251,38 +263,45 @@ function setup() {
 
   // Setup Paper.js with the created canvas
   paper.setup(canvas)
-
-  // Draw the fretboard color
+  
+  // Draw the background
   new paper.Path.Rectangle({
-    point: [0, 0],
+    point: [(nn.width, 0)],
     size: [nn.width, nn.height],
-    fillColor: '#B7491F'
+    fillColor: bg_color
   })
-  // Draw the body color
+  // Draw the body
   new paper.Path.Rectangle({
-    point: [(nn.width / (no_frets + 1)) * no_frets, 0],
-    size: [nn.width, nn.height],
-    fillColor: '#FAD0AD'
+    point: [nn.width * (no_frets / (no_frets + 1)) - (nn.width * 0.07), nn.height * -0.1],
+    size: [nn.width, nn.height * 1.2],
+    radius: nn.height * (1/2),
+    fillColor: body_color
+  })
+  // Draw the fretboard
+  new paper.Path.Rectangle({
+    point: [0, nn.height - fretboard_thickness + fretboard_offset],
+    size: [nn.width * (no_frets / (no_frets + 1)), fretboard_thickness],
+    fillColor: fretboard_color
   })
   // Draw nut, then frets
   new paper.Path.Rectangle({
-    point: [string_thickness * 0.1, 0],
-    size: [string_thickness, nn.height],
+    point: [0, nn.height - fretboard_thickness + fretboard_offset],
+    size: [string_thickness, fretboard_thickness],
     fillColor: nut_color
   })
   
   for (let i = 1; i < no_frets + 1; i++) {
     new paper.Path.Rectangle({
-      point: [(nn.width / (no_frets + 1)) * i, 0],
-      size: [string_thickness, nn.height],
+      point: [(nn.width / (no_frets + 1)) * i, nn.height - fretboard_thickness + fretboard_offset],
+      size: [string_thickness, fretboard_thickness],
       fillColor: fret_color
     })  
   }
-  // Draw courses
-  course(1, (nn.height / 4) * 0.5)
-  course(2, (nn.height / 4) * 1.5)
-  course(2, (nn.height / 4) * 2.5)
-  course(2, (nn.height / 4) * 3.5)
+  //Draw courses.
+  //Shift it down slightly if it's just 1 string. For aesthetics.
+  for (let i = 0; i < courses.length; i++){
+    draw_course(courses[i].no_strings, 
+                ((courses[i].no_strings === 1) * string_spacing / 2) + first_course_y + course_spacing * i)}
   // 
   //animate()
 }
