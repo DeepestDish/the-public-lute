@@ -31,6 +31,8 @@ let nut_color = "#D7B5B3"
 let body_color = "#EAC19B"
 let fretboard_color = "#5F4139"
 //Internal Logic
+let rate_mod = (493.88/440) - 1
+let bend_max = 400
 let mouse_down = false
 let touch_support = false
 
@@ -77,6 +79,8 @@ class Course {
     //Used for detecting mouse touches. DuhhhHhhHhh
     //I'm losing it man
     this.y = 0
+    //THIS IS FUN!!! VIBRATO!!!
+    this.bend = 0
   }
 }
 
@@ -162,7 +166,12 @@ function string_sound(course, sample_offset){
         //SLIGHT RANDOMIZATION
         sample_set[i].preservesPitch = false
         sample_set[i].volume = 0.9 + nn.randomFloat(0,0.1)
+        if (sample_offset === 0){
         sample_set[i].playbackRate = 1 + nn.randomFloat(-0.005, 0.005)
+        course.bend = 0
+        } 
+        //course.bend = 0
+        //sample_set[i].detune = 1 + nn.randomFloat(-0.2, 0.2)
         //
         sample_set[i].play()
         //console.log(sample_set[i].src)
@@ -348,9 +357,10 @@ function setup() {
   }
   //
     
-  //imate()
+  //animate()
+  
   nn.create('label')
-    .content("The Public Lute (v69)")
+    .content("The Public Lute (v64)")
     .css({
     position: 'absolute',
     left: nn.width * 0.02,
@@ -428,10 +438,36 @@ function mouse_move(e) {
     }
 }}
 
+function mouse_wheel(e) {
+  //document.body.innerText = e.deltaY
+  for (let i = 0; i < courses.length; i++){
+    if (is_playing(courses[i])){
+      //update a bending tracker
+      courses[i].bend += e.deltaY;
+      let banana = courses[i].bend
+      if (banana > bend_max){
+        courses[i].bend = bend_max
+      }
+      if (banana < -bend_max){
+        courses[i].bend = -bend_max
+      }
+      //document.body.innerText = courses[i].bend
+    }
+      //
+        for (let f = 0; f < no_frets + 1; f++){
+    courses[i].sample_set[f].playbackRate = 
+      1 + ((Math.abs(courses[i].bend) / bend_max) * rate_mod)}
+    }
+  }
+
 async function animate() {
   await courses
   requestAnimationFrame(animate)
-  document.body.innerText = nn.mouseY
+  for (let i = 0; i < courses.length; i++){
+    if (!is_playing(courses[i])){
+      courses[i].bend = 0
+    }}
+  //document.body.innerText = nn.mouseY
 }
 
 nn.on('load', setup)
