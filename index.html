@@ -59,6 +59,9 @@ let c2 = new Course(["Numpad7", "Numpad8"],
 
 let courses = [c1, c2]
 
+for (let i = 0; i < courses.length; i++){
+  courses[i].sample_set = generate_paths(courses[i])
+}
 //LOOPING FUNCTIONS
 //Functions I use for a plethora of batch operations.
 
@@ -99,19 +102,20 @@ function check_frets(course){
 //Makes a course resonate, whether it's a
 //pluck or a hammer-on/pull-off.
 function string_sound(course, sample_offset){
+  let sample_set = course.sample_set;
     for (let i = 0; i < no_frets + 1; i++){
-      if (i === check_frets(course.sample_set)){
-        course.sample_set[i].currentTime = sample_offset
+      if (i === check_frets(course)){
+        sample_set[i].currentTime = sample_offset
         //SLIGHT RANDOMIZATION
-        course.sample_set[i].preservesPitch = false
-        course.sample_set[i].volume = 0.9 + nn.randomFloat(0,0.1)
-        course.sample_set[i].playbackRate = 1 + nn.randomFloat(-0.005, 0.005)
+        sample_set[i].preservesPitch = false
+        sample_set[i].volume = 0.9 + nn.randomFloat(0,0.1)
+        sample_set[i].playbackRate = 1 + nn.randomFloat(-0.005, 0.005)
         //
-        course.sample_set[i].play()
+        sample_set[i].play()
         //console.log(sample_set[i].src)
       }
       else{
-        course.sample_set[i].pause()
+        sample_set[i].pause()
       }
     }  
 }
@@ -121,7 +125,9 @@ function mute(course){
   for (let i = 0; i < no_frets + 1; i++){
     course.sample_set[i].pause()
 }}
-  
+
+//Checks if any of the samples in a course's
+//sample set is playing.
 function is_playing(sample_set){
   let value = false
   for (let i = 0; i < no_frets + 1; i++){
@@ -137,32 +143,35 @@ function is_playing(sample_set){
   return value
 }
   
-//AUDIO
+//AUDIO FUNCTIONALITY
 function keydown(event){
   //console.log(event.code)
   
-  //PLUCK COURSE 1
-  if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
-    let index = c1_playkeys.indexOf(event.code)
-    if (c1_listeners[index] === true && !c1_muted){
+  //EVERY COURSE LISTENS TO KEYDOWN EVENTS!!!
+  
+  //Anyway
+  for (let i = 0; i < courses.length; i++){
+  if (courses[i].play_keys.includes(event.code)){
+    let index = courses[i].play_keys.indexOf(event.code)
+    if (courses[i].play_listeners[index] === true && !courses[i].muted){
     //console.log("attempting to play c1")
-    string_sound(c1_samples, 0)
-    c1_listeners[index] = false
+    string_sound(courses[i].sample_set, 0)
+    courses[i].play_listeners[index] = false
     }
   }
   
-  //MUTE COURSE 1
-  if (event.code === "Backspace" && !c1_muted){
-    c1_muted = true
-    mute(c1_samples)
+  //Mute Courses
+  if (courses[i].mute_key.includes(event.code) && !courses[i].muted){
+    courses[i].muted = true
+    mute(courses[i])
   }
   
-  //FRET COURSE 1
-  let before = check_frets(c1_samples)
-  let fret = c1_keys.indexOf(event.code) + 1
-  let already_in = c1_fretted.includes(fret)
-  if (c1_keys.includes(event.code) && !already_in){
-    c1_fretted.push(fret)
+  //Fret Courses
+  let before = check_frets(courses[i])
+  let fret = courses[i].play_keys.indexOf(event.code) + 1
+  let already_in = courses[i].fretted.includes(fret)
+  if (courses[i].play_keys.includes(event.code) && !already_in){
+    courses[i].fretted.push(fret)
     let after = check_frets(c1_samples)
     if (is_playing(c1_samples) && before !== after){
       string_sound(c1_samples, hp_offset)
