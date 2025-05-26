@@ -4,7 +4,6 @@
 /* global nn, paper */
 
 let string_thickness = nn.height / 64
-//let course_spacing = nn.height / 4
 let string_spacing = nn.height / 32
 let string_color = "#FFFFFF"
 let fret_color = "#CB9386"
@@ -37,9 +36,10 @@ class Course {
     this.muted = false;
     //The tuning of the course, in MIDI notation.
     this.tuning = tuning;
-    //A list of samples 
-    this.sample_set = [];
+    //The subfolder name the course uses.
     this.subfolder = subfolder;
+    //A list of samples used by the course.
+    this.sample_set = generate_paths(this.tuning, this.subfolder);
   }
 }
 
@@ -50,7 +50,7 @@ let c1 = new Course(["NumpadAdd", "NumpadSubtract"],
                    ["Backspace"],
                    65,
                    "course_1")
-
+//COURSE 2
 let c2 = new Course(["Numpad7", "Numpad8"],
                    ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyU", "KeyI"],
                    ["Backslash"],
@@ -59,27 +59,32 @@ let c2 = new Course(["Numpad7", "Numpad8"],
 
 let courses = [c1, c2]
 
-for (let i = 0; i < courses.length; i++){
-  courses[i].sample_set = generate_paths(courses[i])
-}
+//A for loop to check if courses were properly formed.
+//Uncomment if you wanna run it.
+//for (let i = 0; i < courses.length; i++){
+//  console.log(courses[i])
+//}
+  
+//console.log(generate_paths(c1))
 //LOOPING FUNCTIONS
 //Functions I use for a plethora of batch operations.
 
-function generate_paths(course){
-//This first line clears the sample set.
-//Ideally this'll be useful for when you change tunings.
-course.sample_set.length = 0
-for (let i = course.tuning; i < course.tuning + no_frets + 1; i++){
+function generate_paths(tuning, subfolder){
+
+let path_list = []
+for (let i = tuning; i < tuning + no_frets + 1; i++){
   let note = nn.midiToNote(i)
   if (note.includes("#")){
     note = note.charAt(0) + "s" + note.charAt(2)
   }
-  let path = "samples/" + course.subfolder + "/"  + note + ".mp3"
+  let path = "samples/" + subfolder + "/"  + note + ".mp3"
   //console.log(path)
-  course.sample_set.push(nn.create('audio').set({src: path}))
-}}
+  path_list.push(nn.create('audio').set({src: path}))
+}
 
-//console.log(c1_samples)
+return path_list
+
+}
   
 //GENERATE FILE PATHS!!!
 //COURSE 1
@@ -128,10 +133,10 @@ function mute(course){
 
 //Checks if any of the samples in a course's
 //sample set is playing.
-function is_playing(sample_set){
+function is_playing(course){
   let value = false
   for (let i = 0; i < no_frets + 1; i++){
-    if (sample_set[i].paused){
+    if (course.sample_set[i].paused){
       continue
     }
     else{
@@ -148,9 +153,13 @@ function keydown(event){
   //console.log(event.code)
   
   //EVERY COURSE LISTENS TO KEYDOWN EVENTS!!!
-  
-  //Anyway
+  //To prevent ridiculous amounts of copy-pasting,
+  //I'm using a for loop to run these same checks
+  //on every course. Don't ask me if that's the ideal way.
+  //I don't know.
   for (let i = 0; i < courses.length; i++){
+    
+  //Make a course resonate
   if (courses[i].play_keys.includes(event.code)){
     let index = courses[i].play_keys.indexOf(event.code)
     if (courses[i].play_listeners[index] === true && !courses[i].muted){
@@ -168,35 +177,38 @@ function keydown(event){
   
   //Fret Courses
   let before = check_frets(courses[i])
-  let fret = courses[i].play_keys.indexOf(event.code) + 1
+  let fret = courses[i].fret_keys.indexOf(event.code) + 1
   let already_in = courses[i].fretted.includes(fret)
-  if (courses[i].play_keys.includes(event.code) && !already_in){
+  if (courses[i].fret_keys.includes(event.code) && !already_in){
     courses[i].fretted.push(fret)
-    let after = check_frets(c1_samples)
-    if (is_playing(c1_samples) && before !== after){
-      string_sound(c1_samples, hp_offset)
+    let after = check_frets(courses[i])
+    if (is_playing(courses[i]) && before !== after){
+      string_sound(courses[i], hp_offset)
     }
   }
-}
+}}
 
 async function keyup(event){
-  //MAKE COURSE 1 PLUCKABLE AGAIN
-  if (event.code === "NumpadAdd" || event.code === "NumpadSubtract"){
-    let index = c1_playkeys.indexOf(event.code)
-    c1_listeners[index] = true}
-  //UNMUTE COURSE 1
-  if (event.code === "Backspace"){
-    c1_muted = false
+  //As with keydown, this is executed on a per-course basis.
+  
+  for (let i = 0; i < courses.length; i++){
+  //Make a course pluckable again
+  if (courses[i].play_keys.includes(event.code)){
+    let index = courses[i].play_keys.indexOf(event.code)
+    courses[i].play_listeners[index] = true}
+  //Unmute a course
+  if (courses[i].mute_key.includes(event.code)){
+    courses[i].muted = false
   }
-  //UNFRET COURSE 1
-  if (c1_keys.includes(event.code)){
-    let fret = c1_keys.indexOf(event.code) + 1
-    c1_fretted.splice(c1_fretted.indexOf(fret), 1)
-    if (is_playing(c1_samples) && fret > check_frets(c1_samples)){
-      string_sound(c1_samples, hp_offset)
+  //Unfret a coure
+  if (courses[i].fret_keys.includes(event.code)){
+    let fret = courses[i].fret_keys.indexOf(event.code) + 1
+    courses[i].fretted.splice(courses[i].fretted.indexOf(fret), 1)
+    if (is_playing(courses[i]) && fret > check_frets(courses[i])){
+      string_sound(courses[i], hp_offset)
     }
   }
-}
+}}
   
 //DRAW A COURSE
 function course(strings, height){
@@ -257,7 +269,7 @@ function setup() {
   course(2, (nn.height / 4) * 1.5)
   course(2, (nn.height / 4) * 2.5)
   course(2, (nn.height / 4) * 3.5)
-  //
+  // 
   //animate()
 }
 
