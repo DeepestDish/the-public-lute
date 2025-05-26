@@ -9,10 +9,10 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
 <script>  
-document.addEventListener('touchmove', function (event) {
-  if (event.scale !== 1) { event.preventDefault(); }
-}, { passive: false });
+
 /* global nn, paper, WebFont */
 
   WebFont.load({
@@ -23,13 +23,14 @@ document.addEventListener('touchmove', function (event) {
 
 //Dimensions
 let string_thickness = (nn.height * 1) / 100
+let hitbox_thickness = (nn.height * 1) / 25
 let string_spacing = nn.height / 64
 let course_spacing = nn.height / 6
 let first_course_y = (nn.height / 8) * 2.9
 let fretboard_thickness = nn.height * (3/4)
-let lute_offset = -nn.height * (1.4/10)
+let lute_offset = -nn.height * (2/10)
 let no_frets = 8
-let lute_scale = 0.5
+let lute_scale = 1
 //Colors
 let bg_color = "#DDCDBA"
 let string_color = "#F4F1E5"
@@ -37,7 +38,8 @@ let fret_color = "#C39491"
 let nut_color = "#D7B5B3"
 let body_color = "#EAC19B"
 let fretboard_color = "#5F4139"
-//
+//Internal Logic
+let mouse_down = false
 let touch_support = false
 
 function hasTouchSupport() {
@@ -76,6 +78,13 @@ class Course {
     this.sample_set = generate_paths(this.tuning, this.subfolder);
     //How many strings?
     this.no_strings = no_strings;
+    //mouse_listener regulates playing via cursor-bumping.
+    //Surely, you know what I mean...
+    this.mouse_listener = true;
+    //The y-coordinate of the course.
+    //Used for detecting mouse touches. DuhhhHhhHhh
+    //I'm losing it man
+    this.y = 0
   }
 }
 
@@ -340,10 +349,14 @@ function setup() {
   //Shift it down slightly if it's just 1 string. For aesthetics.
   for (let i = 0; i < courses.length; i++){
     draw_course(courses[i].no_strings, 
-                ((courses[i].no_strings === 1) * string_spacing / 2) + first_course_y + course_spacing * i + lute_offset)}
+                ((courses[i].no_strings === 1) * string_spacing / 2) + first_course_y + course_spacing * i + lute_offset)
+    //Drawn position should inform where you should
+    //press to pluck a note.
+    courses[i].y = (string_spacing / 2) + first_course_y + course_spacing * i + lute_offset + (nn.height * 1/5)
+  }
   //
     
-  //animate()
+  //imate()
   nn.create('label')
     .content("The Public Lute")
     .css({
@@ -384,13 +397,40 @@ function setup() {
     .addTo("body")
 }
 
+function mouse_pressed() {
+  mouse_down = true
+}
+function mouse_released(){
+  mouse_down = false
+}
+
+function mouse_move(e) {
+  for (let i = 0; i < courses.length; i++){
+    cy = courses[i].y
+    //If within a certain y-coordinate range...
+    if (e.y > cy - hitbox_thickness && e.y < cy + hitbox_thickness){
+      //Pluck it! Then deactivate the listener to prevent spamming.
+      if (!mouse_down && courses[i].mouse_listener){
+        string_sound(courses[i], 0)
+        courses[i].mouse_listener = false
+      }
+    }
+    //Otherwise, assume that it's left the range and reactivate.
+    else{
+      courses[i].mouse_listener = true
+    }
+}}
+
 async function animate() {
   await courses
   requestAnimationFrame(animate)
-  document.body.innerText = courses[0].fretted + courses[1].fretted + courses[2].fretted + courses[3].fretted
+  document.body.innerText = nn.mouseY
 }
-  
+
 nn.on('load', setup)
 nn.on('keydown', keydown)
 nn.on('keyup', keyup)
+nn.on('mousemove', mouse_move)
+nn.on('mousedown', mouse_pressed)
+nn.on('mouseup', mouse_released)
 </script>
