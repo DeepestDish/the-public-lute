@@ -412,7 +412,7 @@ function retune(tuning_offset){
   label.innerHTML = "Tuning: "
   for (let i = 0; i < courses.length; i++){
     //Rebuild sample paths.
-    courses[i].sample_set = generate_paths(notes[i] + tuning_offset, courses[i].subfolder);
+    courses[i].sample_set = generate_paths(notes[3 - i] + tuning_offset, courses[i].subfolder);
     
     //Adjust the label.
     let new_note = nn.midiToNote(notes[i] + tuning_offset)
