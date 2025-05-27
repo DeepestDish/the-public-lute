@@ -30,12 +30,13 @@ let lute_scale = 1 //CURRENTLY does nothing! CURRENTLY!
 //Colors
 let bg_color = "#DDCDBA"
 let string_color = "#F4F1E5"
-let played_color = "#4764F5"
+let played_color = "#6D47F5"
 let fret_color = "#C39491"
 let nut_color = "#D7B5B3"
 let body_color = "#EAC19B"
 let fretboard_color = "#5F4139"
 //Internal Logic
+const c_overlays = []
 let rate_mod = (493.88/440) - 1
 let bend_max = 400
 let mouse_down = false
@@ -214,7 +215,7 @@ function is_playing(course){
 //Checks the playback time of a course.
 //Returns a normalized "energy" value based on
 //a 6-second ringout time.
-function energy(course){
+function get_energy(course){
   let value = 0
   for (let i = 0; i < no_frets + 1; i++){
     if (course.sample_set[i].paused){
@@ -295,21 +296,23 @@ async function keyup(event){
   
 //DRAW A COURSE
 function draw_course(strings, height, color, opacity){
-  new paper.Path.Rectangle({
+  let group = new paper.Group();
+  group.addChild(new paper.Path.Rectangle({
     point: [0, height],
     size: [nn.width, string_thickness],
     fillColor: color,
     opacity: opacity
-  })
+  }))
   
   if (strings === 2){
-    new paper.Path.Rectangle({
+    group.addChild(new paper.Path.Rectangle({
       point: [0, height + string_spacing],
       size: [nn.width, string_thickness],
       fillColor: color,
       opacity: opacity
-    })
+    }))
   }
+  return group
 }
   
 //DRAW THE LUTE ITSELF
@@ -432,24 +435,32 @@ function setup() {
   //NO MORE OPTIONS!!!
   //Now, initialize the second layer for other nonsense.
   new paper.Layer()
+  //COURSE OVERLAYS
+  //These are modified to show the "energy" level
+  //of played courses
+  for (let i = 0; i < courses.length; i++){
+    const overlay = 
+      draw_course(courses[i].no_strings, 
+                  courses[i].y - (string_thickness * 0.78 * (courses[i].no_strings === 2)), played_color,
+                 1);
+    overlay.blendMode = 'multiply'
+    c_overlays.push(overlay)
+    }
+  //console.log(c_overlays)
   animate()
 }
 
 async function animate() {
   await courses
-  //Overlay for played string
-  //yeah yeah i'll optimize it later ok buddy
+  await c_overlays
+  //Overlays for played strings
   for (let i = 0; i < courses.length; i++){
     if (is_playing(courses[i])){
-      //console.log("woah")
-      draw_course(courses[i].no_strings, 
-                  courses[i].y - (string_thickness * 0.78 * (courses[i].no_strings === 2)), played_color,
-                 (energy(courses[i])) ** 0.5)
-      draw_course(courses[i].no_strings, 
-                  courses[i].y - (string_thickness * 0.78 * (courses[i].no_strings === 2)), string_color,
-                 (1 - energy(courses[i])) ** 0.5)
+      c_overlays[i].opacity = get_energy(courses[i]) ** 2
     }
-
+    else{
+      c_overlays[i].opacity = 0
+    }
   }
   //setTimeout(animate, 33)
   requestAnimationFrame(animate)
