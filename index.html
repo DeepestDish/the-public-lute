@@ -38,6 +38,8 @@ let fretboard_color = "#5F4139"
 //Internal Logic
 const c_overlays = []
 const f_overlays = []
+let help_icon
+let help_box
 let rate_mod = (493.88/440) - 1
 let bend_max = 400
 let mouse_down = false
@@ -426,9 +428,10 @@ function setup() {
   //
   //We're done drawing the first layer. Woohoo.
   
-  //Setting up OPTIONS!!!
+  //Setting up the upper UI.
+  //Title label.
   nn.create('label')
-    .content("The Public Lute")
+    .content("The Public Lute (v1)")
     .css({
     position: 'absolute',
     left: nn.width * 0.02,
@@ -436,10 +439,10 @@ function setup() {
     color: '#CE202C',
     fontFamily: 'UnifrakturMaguntia',
     fontWeight: 'bold',
-    fontSize: nn.height * 0.06
+    fontSize: nn.height * 0.05
   })
     .addTo("body")
-  
+  //Tuning Slider.
   nn.create('input')
     .set({
         id: "tuning_slider",
@@ -458,7 +461,7 @@ function setup() {
   retune(e.target.value - 6);
   })
   .addTo("body")
-  
+  //Tuning Label
   nn.create('label')
     .content("Tuning: D G C F")
     .set({id: "tuning_label"})
@@ -469,8 +472,7 @@ function setup() {
     top: nn.height * 0.05
   })
     .addTo("body")
-  
-  //NO MORE OPTIONS!!!
+
   //Now, initialize the second layer for other nonsense.
   new paper.Layer()
   //COURSE OVERLAYS
@@ -496,40 +498,84 @@ function setup() {
     });
     f_overlays.push(circle)
   }
-  //console.log(c_overlays)
+  //
+  new paper.Layer()
+  //Help Icon
+  help_icon = new paper.Group()
+  help_icon.addChild(new paper.Path.Circle({
+      center: [nn.width - nn.width * 0.12, 
+               nn.height * 0.06],
+      radius: nn.height * 0.05,
+      fillColor: 'white'
+    }))
+  help_icon.addChild(    new paper.PointText({
+    point: [nn.width - nn.width * 0.14, 
+            nn.height * 0.085],
+    content: "?",
+    fillColor: 'green',
+    fontFamily: 'MedievalSharp',
+    fontWeight: 'bold',
+    fontSize: nn.height * 0.08
+  }))
+  help_icon.opacity = 0.69
+  //
+  new paper.Layer()
+  help_box = new paper.Group()
+  help_box.addChild( new paper.Path.Rectangle({
+      point: [nn.width * 0.1, nn.height * 0.1],
+      size: [nn.height * 0.8, nn.height * 0.8],
+      fillColor: 'black'
+    }))
+  help_box.addChild(new paper.PointText({
+    point: [nn.width * 0.5, 
+            nn.height * 0.2],
+    content: "1. Move your mouse to pluck the strings.\n\n 2. Click/middle click to mute strings.\n\n 3. Use the keyboard to change pitches.\n\n 4. Last, but not least... \nscroll for pitch bends.\n\nTake this knowledge and charm\n some elves, won't you?\n\nHappy luting, and stay tuned for glorious\nupdates.",
+    justification: "center",
+    fillColor: 'white',
+    fontFamily: 'MedievalSharp',
+    fontWeight: 'bold',
+    fontSize: nn.height * 0.04
+  }))
   animate()
 }
 
 async function animate() {
   await courses
   await c_overlays
-  let new_fd = new paper.Group()
+  //let new_fd = new paper.Group()
   //Clear the fret display!
   for (let i = 0; i < courses.length; i++){
-    //Overlays opacity changing
+    //String overlays opacity changing
     let mrs_x = fret_x(check_frets(courses[i])) + nn.width * 0.027
     let mr_y = courses[i].y + nn.height * 0.005
     if (is_playing(courses[i])){
       let energy = get_energy(courses[i])
-      c_overlays[i].opacity = energy ** 2
+      c_overlays[i].opacity = energy ** 2}
       //
-      if (courses[i].fretted.length > 0)
-        {f_overlays[i].opacity = 1
+    else{
+      c_overlays[i].opacity = 0
+    }
+    //Fret overlays
+    if (courses[i].fretted.length > 0)
+        {
          f_overlays[i].position = new paper.Point(mrs_x, mr_y);
         }
       else
-        {f_overlays[i].opacity = 1
+        {
         f_overlays[i].position = new paper.Point(-50, mr_y);}
     }
-    else{
-      c_overlays[i].opacity = 0
-      f_overlays[i].opacity = 1
+  //Help icon
+   if (nn.dist(nn.mouseX, nn.mouseY, nn.width - nn.width * 0.14, 
+            nn.height * 0.085) < nn.height * 0.04){
+      help_icon.opacity = 1
+      help_box.opacity = 1
     }
-    //Display what frets are being pressed!
-    //for (let i = 0; i < courses[i].fretted.length]; i++){
-    //new_fd.addChild()
-    //}
+  else{
+    help_icon.opacity = 0.69
+    help_box.opacity = 0
   }
+    
+  
   //setTimeout(animate, 33)
   requestAnimationFrame(animate)
   //document.body.innerText = nn.mouseY
