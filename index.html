@@ -506,7 +506,8 @@ function setup() {
       center: [nn.width - nn.width * 0.12, 
                nn.height * 0.06],
       radius: nn.height * 0.05,
-      fillColor: 'white'
+      fillColor: 'white',
+      opacity: 0
     }))
   help_icon.addChild(    new paper.PointText({
     point: [nn.width - nn.width * 0.14, 
@@ -522,8 +523,8 @@ function setup() {
   new paper.Layer()
   help_box = new paper.Group()
   help_box.addChild( new paper.Path.Rectangle({
-      point: [nn.width * 0.1, nn.height * 0.1],
-      size: [nn.height * 0.8, nn.height * 0.8],
+      point: [nn.width * 0.5, nn.height * 0.1],
+      size: [nn.width * 0.5, nn.height * 0.8],
       fillColor: 'black'
     }))
   help_box.addChild(new paper.PointText({
