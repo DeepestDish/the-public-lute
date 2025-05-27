@@ -489,7 +489,7 @@ function setup() {
   new paper.Layer()
   for (let i = 0; i < courses.length; i++){
     const circle = new paper.Path.Circle({
-      center: [fret_x(1) + nn.width * 0.027, 
+      center: [-50, 
                courses[i].y + nn.height * 0.005],
       radius: string_thickness * 1.75,
       fillColor: 'red'
@@ -507,11 +507,23 @@ async function animate() {
   //Clear the fret display!
   for (let i = 0; i < courses.length; i++){
     //Overlays opacity changing
+    let mrs_x = fret_x(check_frets(courses[i])) + nn.width * 0.027
+    let mr_y = courses[i].y + nn.height * 0.005
     if (is_playing(courses[i])){
-      c_overlays[i].opacity = get_energy(courses[i]) ** 2
+      let energy = get_energy(courses[i])
+      c_overlays[i].opacity = energy ** 2
+      //
+      if (courses[i].fretted.length > 0)
+        {f_overlays[i].opacity = 1
+         f_overlays[i].position = new paper.Point(mrs_x, mr_y);
+        }
+      else
+        {f_overlays[i].opacity = 1
+        f_overlays[i].position = new paper.Point(-50, mr_y);}
     }
     else{
       c_overlays[i].opacity = 0
+      f_overlays[i].opacity = 1
     }
     //Display what frets are being pressed!
     //for (let i = 0; i < courses[i].fretted.length]; i++){
