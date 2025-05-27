@@ -180,7 +180,11 @@ function string_sound(course, sample_offset){
         course.bend = 0
         } 
         else{
-          sample_set[i].volume = 0.75 + nn.randomFloat(0,0.15)
+          sample_set[i].volume = 0.75 + 
+            nn.randomFloat(0,0.15)
+          if (course.bend === 0){
+            sample_set[i].playbackRate = 1
+          }
         }
         //course.bend = 0
         //sample_set[i].detune = 1 + nn.randomFloat(-0.2, 0.2)
@@ -198,6 +202,7 @@ function string_sound(course, sample_offset){
 function mute(course){
   course.bend = 0
   for (let i = 0; i < no_frets + 1; i++){
+    course.sample_set[i].playbackRate = 1
     course.sample_set[i].pause()
 }}
 
@@ -208,6 +213,8 @@ function is_playing(course){
   for (let i = 0; i < no_frets + 1; i++){
     if (course.sample_set[i].paused){
       continue
+      course.sample_set[i].playbackRate = 1
+      course.bend = 0
     }
     else{
       value = true
@@ -245,7 +252,7 @@ async function keydown(event){
   //on every course. Don't ask me if that's the ideal way.
   //I don't know.
   
-  console.log(event.code) 
+  //console.log(event.code) 
   
   for (let i = 0; i < courses.length; i++){
   
@@ -521,6 +528,7 @@ function setup() {
   help_icon.opacity = 0.69
   //
   new paper.Layer()
+  //INSTRUCTION BOX
   help_box = new paper.Group()
   help_box.addChild( new paper.Path.Rectangle({
       point: [nn.width * 0.1, nn.height * 0.1],
@@ -529,13 +537,13 @@ function setup() {
     }))
   help_box.addChild(new paper.PointText({
     point: [nn.width * 0.5, 
-            nn.height * 0.2],
-    content: "1. Move your mouse to pluck the strings.\n\n 2. Click/middle click to mute strings.\n\n 3. Use the keyboard to change pitches.\n\n 4. Last, but not least... \nscroll for pitch bends.\n\nTake this knowledge and charm\n some elves, won't you?\n\nHappy luting, and stay tuned for glorious\nupdates. And don't use your touchscreen... yet. :) ",
+            nn.height * 0.175],
+    content: "1. Move your mouse to pluck the strings.\n\n 2. Click/middle click to mute strings. \n Hold the left mouse button to dodge strings.\n\n 3. Use the keyboard to change pitches.\n\n 4. Last, but not least... \nscroll for pitch bends.\n\nTake this knowledge and charm\n some elves, won't you?\n\nHappy luting, and stay tuned for glorious\nupdates. And don't use your touchscreen... yet. :) ",
     justification: "center",
     fillColor: 'white',
     fontFamily: 'MedievalSharp',
     fontWeight: 'bold',
-    fontSize: nn.height * 0.04
+    fontSize: nn.height * 0.039
   }))
   animate()
 }
@@ -543,6 +551,7 @@ function setup() {
 async function animate() {
   await courses
   await c_overlays
+  //console.log(courses[0].bend)
   //let new_fd = new paper.Group()
   //Clear the fret display!
   for (let i = 0; i < courses.length; i++){
@@ -554,6 +563,7 @@ async function animate() {
       c_overlays[i].opacity = energy ** 2}
       //
     else{
+      courses[i].bend = 0
       c_overlays[i].opacity = 0
     }
     //Fret overlays
@@ -584,7 +594,7 @@ async function animate() {
 
 function retune(tuning_offset){
   //console.log("ran ran ru")
-  console.log(tuning_offset)
+  //console.log(tuning_offset)
   let notes = [50, 55, 60, 65]
   let label = document.getElementById("tuning_label");
   label.innerHTML = "Tuning: "
@@ -647,6 +657,7 @@ function mouse_wheel(e) {
       //update a bending tracker
       courses[i].bend += e.deltaY;
       let banana = courses[i].bend
+      console.log(banana)
       if (banana > bend_max){
         courses[i].bend = bend_max
       }
