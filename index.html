@@ -319,10 +319,14 @@ function draw_course(strings, height, color, opacity){
   return group
 }
 
+//X position for the center of a fret space.
+function fret_x(fret){
+  return (nn.width * (1 / (no_frets + 1)) * fret) - nn.width * 0.08
+}
 //DRAW A FRET MARKER
 function draw_marker(content, fret, height){
     new paper.PointText({
-    point: [(nn.width * (1 / (no_frets + 1)) * fret) - nn.width * 0.08, 
+    point: [fret_x(fret), 
             (nn.height * height) + lute_offset],
     content: content,
     fillColor: fret_color,
@@ -480,6 +484,8 @@ function setup() {
     overlay.blendMode = 'multiply'
     c_overlays.push(overlay)
     }
+  new paper.Layer()
+  
   //console.log(c_overlays)
   animate()
 }
