@@ -323,7 +323,7 @@ function draw_course(strings, height, color, opacity){
 
 //X position for the center of a fret space.
 function fret_x(fret){
-  return (nn.width * (1 / (no_frets + 1)) * fret) - nn.width * 0.08
+  return (nn.width * (1 / (no_frets + 1)) * fret) - nn.width * 0.07
 }
 //DRAW A FRET MARKER
 function draw_marker(content, fret, height){
@@ -530,7 +530,7 @@ function setup() {
   help_box.addChild(new paper.PointText({
     point: [nn.width * 0.5, 
             nn.height * 0.2],
-    content: "1. Move your mouse to pluck the strings.\n\n 2. Click/middle click to mute strings.\n\n 3. Use the keyboard to change pitches.\n\n 4. Last, but not least... \nscroll for pitch bends.\n\nTake this knowledge and charm\n some elves, won't you?\n\nHappy luting, and stay tuned for glorious\nupdates.",
+    content: "1. Move your mouse to pluck the strings.\n\n 2. Click/middle click to mute strings.\n\n 3. Use the keyboard to change pitches.\n\n 4. Last, but not least... \nscroll for pitch bends.\n\nTake this knowledge and charm\n some elves, won't you?\n\nHappy luting, and stay tuned for glorious\nupdates. And don't use your touchscreen... yet. :) ",
     justification: "center",
     fillColor: 'white',
     fontFamily: 'MedievalSharp',
@@ -547,7 +547,7 @@ async function animate() {
   //Clear the fret display!
   for (let i = 0; i < courses.length; i++){
     //String overlays opacity changing
-    let mrs_x = fret_x(check_frets(courses[i])) + nn.width * 0.027
+    let mrs_x = fret_x(check_frets(courses[i])) + nn.width * 0.018
     let mr_y = courses[i].y + nn.height * 0.005
     if (is_playing(courses[i])){
       let energy = get_energy(courses[i])
